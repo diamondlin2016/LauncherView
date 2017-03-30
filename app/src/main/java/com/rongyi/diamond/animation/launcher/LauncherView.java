@@ -4,9 +4,11 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -34,22 +36,20 @@ public class LauncherView extends RelativeLayout {
 
     public LauncherView(Context context) {
         super(context);
-        init();
     }
 
     public LauncherView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init();
     }
 
     public LauncherView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init();
     }
 
     ImageView red, purple, yellow, blue;
 
     private void init() {
+
         LayoutParams lp = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         lp.addRule(CENTER_HORIZONTAL, TRUE);//这里的TRUE 要注意 不是true
         lp.addRule(CENTER_VERTICAL, TRUE);
@@ -74,6 +74,37 @@ public class LauncherView extends RelativeLayout {
         red.setLayoutParams(lp);
         red.setImageResource(R.drawable.shape_circle_red);
         addView(red);
+
+        setAnimation(red, redPath1);
+        setAnimation(purple, purplePath1);
+        setAnimation(yellow, yellowPath1);
+        setAnimation(blue, bluePath1);
+
+    }
+
+    ViewPath redPath1, purplePath1, yellowPath1, bluePath1;
+
+    private void initPath() {
+        redPath1 = new ViewPath(); //偏移坐标
+        redPath1.moveTo(0, 0);
+        redPath1.lineTo(mWidth / 5 - mWidth / 2, 0);
+        redPath1.curveTo(-700, -mHeight / 2, mWidth / 3 * 2, -mHeight / 3 * 2, 0, -dp80);
+
+        purplePath1 = new ViewPath(); //偏移坐标
+        purplePath1.moveTo(0, 0);
+        purplePath1.lineTo(mWidth / 5 * 2 - mWidth / 2, 0);
+        purplePath1.curveTo(-300, -mHeight / 2, mWidth, -mHeight / 9 * 5, 0, -dp80);
+
+        yellowPath1 = new ViewPath(); //偏移坐标
+        yellowPath1.moveTo(0, 0);
+        yellowPath1.lineTo(mWidth / 5 * 3 - mWidth / 2, 0);
+        yellowPath1.curveTo(300, mHeight, -mWidth, -mHeight / 9 * 5, 0, -dp80);
+
+        bluePath1 = new ViewPath(); //偏移坐标
+        bluePath1.moveTo(0, 0);
+        bluePath1.lineTo(mWidth / 5 * 4 - mWidth / 2, 0);
+        bluePath1.curveTo(700, mHeight / 3 * 2, -mWidth / 2, mHeight / 2, 0, -dp80);
+
     }
 
     @Override
@@ -81,57 +112,17 @@ public class LauncherView extends RelativeLayout {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         mWidth = getMeasuredWidth();
         mHeight = getMeasuredHeight();
+        initPath();
     }
 
-    @Override
-    public void onWindowFocusChanged(boolean hasWindowFocus) {
-        super.onWindowFocusChanged(hasWindowFocus);
-        if (hasWindowFocus&&!mHasStart){
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    start();
-                    mHasStart = true;
-                }
-            },500);
-        }
-    }
 
     public void start() {
-        ViewPath redPath1 = new ViewPath(); //偏移坐标
-        redPath1.moveTo(0, 0);
-        redPath1.lineTo(mWidth / 5 - mWidth / 2, 0);
-        ViewPath redPath2 = new ViewPath();
-        redPath2.moveTo(mWidth / 5 - mWidth / 2, 0);
-        redPath2.curveTo(-700, -mHeight / 2, mWidth / 3 * 2, -mHeight / 3 * 2, 0, -dp80);
-        setAnimation(red, redPath1, redPath2);
-
-
-        ViewPath purplePath1 = new ViewPath(); //偏移坐标
-        purplePath1.moveTo(0, 0);
-        purplePath1.lineTo(mWidth / 5 * 2 - mWidth / 2, 0);
-        ViewPath purplePath2 = new ViewPath(); //偏移坐标
-        purplePath2.moveTo(mWidth / 5 * 2 - mWidth / 2, 0);
-        purplePath2.curveTo(-300, -mHeight / 2, mWidth, -mHeight / 9 * 5, 0, -dp80);
-        setAnimation(purple, purplePath1, purplePath2);
-
-
-        ViewPath yellowPath1 = new ViewPath(); //偏移坐标
-        yellowPath1.moveTo(0, 0);
-        yellowPath1.lineTo(mWidth / 5 * 3 - mWidth / 2, 0);
-        ViewPath yellowPath2 = new ViewPath(); //偏移坐标
-        yellowPath2.moveTo(mWidth / 5 * 3 - mWidth / 2, 0);
-        yellowPath2.curveTo(300, mHeight, -mWidth, -mHeight / 9 * 5, 0, -dp80);
-        setAnimation(yellow, yellowPath1, yellowPath2);
-
-
-        ViewPath bluePath1 = new ViewPath(); //偏移坐标
-        bluePath1.moveTo(0, 0);
-        bluePath1.lineTo(mWidth / 5 * 4 - mWidth / 2, 0);
-        ViewPath bluePath2 = new ViewPath(); //偏移坐标
-        bluePath2.moveTo(mWidth / 5 * 4 - mWidth / 2, 0);
-        bluePath2.curveTo(700, mHeight / 3 * 2, -mWidth / 2, mHeight / 2, 0, -dp80);
-        setAnimation(blue, bluePath1, bluePath2);
+        removeAllViews();
+        init();
+        redAll.start();
+        yellowAll.start();
+        purpleAll.start();
+        blueAll.start();
 
         new Handler().postDelayed(new Runnable() {
             @Override
@@ -141,33 +132,58 @@ public class LauncherView extends RelativeLayout {
         }, 2400);
     }
 
-    private void setAnimation(final ImageView target, ViewPath path1, ViewPath path2) {
-        //左右平移
-        ObjectAnimator redAnim1 = ObjectAnimator.ofObject(new ViewObj(target), "fabLoc", new ViewPathEvaluator(), path1.getPoints().toArray());
-        redAnim1.setInterpolator(new AccelerateDecelerateInterpolator());
-        redAnim1.setDuration(800);
-        //贝塞尔曲线
-        ObjectAnimator redAnim2 = ObjectAnimator.ofObject(new ViewObj(target), "fabLoc", new ViewPathEvaluator(), path2.getPoints().toArray());
-        redAnim2.setInterpolator(new AccelerateDecelerateInterpolator());
-
-        //组合动画
-        addAnimation(redAnim1, redAnim2, target);
+    private void setAnimation(final ImageView target, ViewPath path1) {
+        //路径
+        ObjectAnimator anim1 = ObjectAnimator.ofObject(new ViewObj(target), "fabLoc", new ViewPathEvaluator(), path1.getPoints().toArray());
+        anim1.setInterpolator(new AccelerateDecelerateInterpolator());
+        anim1.setDuration(2600);
+        //组合添加缩放透明效果
+        addAnimation(anim1, target);
     }
 
-    private void addAnimation(ObjectAnimator animator1, ObjectAnimator animator2, ImageView target) {
-        ObjectAnimator alpha = ObjectAnimator.ofFloat(target, View.ALPHA, 1f, 0.5f);
-        ObjectAnimator scaleX = ObjectAnimator.ofFloat(target, View.SCALE_X, 1, getScale(target), 1.0f);
-        ObjectAnimator scaleY = ObjectAnimator.ofFloat(target, View.SCALE_Y, 1, getScale(target), 1.0f);
 
-        AnimatorSet all2 = new AnimatorSet();
-        all2.setDuration(1800);
-        all2.playTogether(alpha, scaleX, scaleY, animator2);
-        all2.addListener(new AnimEndListener(target));
+    AnimatorSet redAll, purpleAll, yellowAll, blueAll;
 
-        AnimatorSet all = new AnimatorSet();
-        all.playSequentially(animator1, all2);
-        all.start();
+    private void addAnimation(ObjectAnimator animator1, final ImageView target) {
+        ValueAnimator valueAnimator = ValueAnimator.ofFloat(1, 1000);
+        valueAnimator.setDuration(1800);
+        valueAnimator.setStartDelay(1000);
+        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float value = (float) animation.getAnimatedValue();
+                float alpha = 1 - value / 2000;
+                float scale = getScale(target) - 1;
+                if (value <= 500) {
+                    scale = 1 + (value / 500) * scale;
+                } else {
+                    scale = 1 + ((1000 - value) / 500) * scale;
+                }
+                target.setScaleX(scale);
+                target.setScaleY(scale);
+                target.setAlpha(alpha);
+            }
+        });
+        valueAnimator.addListener(new AnimEndListener(target));
+        if (target == red) {
+            redAll = new AnimatorSet();
+            redAll.playTogether(animator1, valueAnimator);
+        }
+        if (target == blue) {
+            blueAll = new AnimatorSet();
+            blueAll.playTogether(animator1, valueAnimator);
+        }
+        if (target == purple) {
+            purpleAll = new AnimatorSet();
+            purpleAll.playTogether(animator1, valueAnimator);
+        }
+        if (target == yellow) {
+            yellowAll = new AnimatorSet();
+            yellowAll.playTogether(animator1, valueAnimator);
+        }
+
     }
+
 
     private float getScale(ImageView target) {
         if (target == red)
@@ -179,7 +195,6 @@ public class LauncherView extends RelativeLayout {
         if (target == blue)
             return 3.5f;
         return 2f;
-
     }
 
 
@@ -198,7 +213,7 @@ public class LauncherView extends RelativeLayout {
                 alpha.setDuration(200);
                 alpha.start();
             }
-        },400);
+        }, 400);
 
     }
 
@@ -220,11 +235,11 @@ public class LauncherView extends RelativeLayout {
     public class ViewObj {
         private final ImageView red;
 
-        public ViewObj(ImageView red){
+        public ViewObj(ImageView red) {
             this.red = red;
         }
 
-        public void setFabLoc(ViewPoint newLoc){
+        public void setFabLoc(ViewPoint newLoc) {
             red.setTranslationX(newLoc.x);
             red.setTranslationY(newLoc.y);
         }

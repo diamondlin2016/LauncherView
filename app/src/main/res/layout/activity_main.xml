@@ -1,7 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.rongyi.diamond.animation.launcher.LauncherView
-    android:id="@+id/load_view"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android"/>
+    android:layout_height="match_parent">
 
+    <com.rongyi.diamond.animation.launcher.LauncherView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/load_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <Button
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_width="wrap_content"
+        android:text="start"
+        android:id="@+id/start"
+        android:layout_height="wrap_content"/>
+
+</FrameLayout>
